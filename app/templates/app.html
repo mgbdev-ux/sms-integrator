@@ -255,7 +255,7 @@
                                         <option value="240">4 hours</option>
                                         <option value="480">8 hours</option>
                                         <option value="720">12 hours</option>
-                                        <option value="1440">24 hours</option>
+                                        <option value="1440">Daily (once a day)</option>
                                     </select>
                                 </div>
                                 <p class="text-[11px] text-slate-500 leading-snug">The same message above will be re-sent automatically to this number on this schedule until the end date/time.</p>
@@ -1401,7 +1401,7 @@
         }
 
         function frequencyLabel(minutes) {
-            const map = { 5: "5 min", 15: "15 min", 45: "45 min", 60: "60 min", 120: "2 hr", 240: "4 hr", 480: "8 hr", 720: "12 hr", 1440: "24 hr" };
+            const map = { 5: "5 min", 15: "15 min", 45: "45 min", 60: "60 min", 120: "2 hr", 240: "4 hr", 480: "8 hr", 720: "12 hr", 1440: "Daily" };
             return map[minutes] || `${minutes} min`;
         }
 
