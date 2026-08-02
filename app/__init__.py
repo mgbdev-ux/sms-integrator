@@ -35,16 +35,6 @@ def create_app():
     with app.app_context():
         init_db()
 
-    # Skip starting a second copy of the scheduler in the Flask dev
-    # reloader's watcher process (it forks a child that re-runs this
-    # module); only the actual running process should have os.environ
-    # WERKZEUG_RUN_MAIN set to "true" once it re-execs. In production
-    # (gunicorn, no reloader) this env var is simply unset, so we start
-    # normally.
-    if not Config.DEBUG or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        from .scheduler import register_scheduler
-        app.scheduler = register_scheduler(app)
-
     app.register_blueprint(pages_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(coworker_bp)
@@ -68,10 +58,9 @@ def create_app():
             # all - this also fixes styling for users whose network/ISP/
             # extensions blocked cdn.tailwindcss.com.
             # unpkg.com is Leaflet's map JS/CSS (used by app.html).
-            # Fonts are the native OS font stack now (no Google Fonts network
-            # dependency), so no font-src / fonts.googleapis.com allowance is needed.
             "script-src 'self' 'unsafe-inline' https://unpkg.com; "
-            "style-src 'self' 'unsafe-inline' https://unpkg.com;",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+            "font-src https://fonts.gstatic.com;",
         )
         return response
 

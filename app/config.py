@@ -1,50 +1,7 @@
 import os
 import secrets
-import time
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-def _get_persistent_fallback():
-    # To prevent multi-worker process token mismatches on Cloud Run or Gunicorn,
-    # we persist the generated fallback key in a shared file (/tmp/.sms_gateway_fallback).
-    # Since all processes run on the same instance, they will share the same fallback key.
-    fallback_file = "/tmp/.sms_gateway_fallback"
-    
-    # Attempt to read existing key first
-    for _ in range(5):
-        try:
-            if os.path.exists(fallback_file):
-                with open(fallback_file, "r") as f:
-                    val = f.read().strip()
-                    if len(val) >= 32:
-                        return val
-        except Exception:
-            pass
-        time.sleep(0.1)
-
-    val = secrets.token_urlsafe(32)
-    try:
-        # Atomic file creation using O_CREAT | O_EXCL to prevent concurrent write races
-        fd = os.open(fallback_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        with os.fdopen(fd, "w") as f:
-            f.write(val)
-        return val
-    except FileExistsError:
-        # Another worker process created the file concurrently, read it
-        for _ in range(10):
-            try:
-                with open(fallback_file, "r") as f:
-                    read_val = f.read().strip()
-                    if len(read_val) >= 32:
-                        return read_val
-            except Exception:
-                pass
-            time.sleep(0.1)
-    except Exception:
-        pass
-    return val
-
 
 # These are the well-known defaults that used to ship in source control.
 # They must NEVER be accepted as real secrets in production.
@@ -80,7 +37,7 @@ class Config:
     # --- Secrets ------------------------------------------------------
     # Random per-process fallback used ONLY in development mode, so we never
     # fall back to a hardcoded string sitting in a public repo.
-    _dev_fallback = _get_persistent_fallback()
+    _dev_fallback = secrets.token_urlsafe(32)
 
     ADMIN_PASSWORD_DEFAULT = os.environ.get("ADMIN_PASSWORD") or (_dev_fallback if DEBUG else "")
     DEVICE_TOKEN = os.environ.get("DEVICE_TOKEN") or (_dev_fallback if DEBUG else "")
