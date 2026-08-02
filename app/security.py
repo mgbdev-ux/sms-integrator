@@ -65,6 +65,10 @@ def verify_coworker_password(username, candidate_password):
     return None
 
 
+# Alias for compatibility if imported elsewhere
+verify_user_password = verify_coworker_password
+
+
 def generate_token(username):
     """Secure HMAC signed bearer token for the coworker portal."""
     timestamp = str(int(time.time()))
